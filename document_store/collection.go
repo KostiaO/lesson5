@@ -1,5 +1,12 @@
 package document_store
 
+import "errors"
+
+var (
+	ErrPrimaryKeysDoesNotMatch = errors.New("primary key of doc does not correspond to primary key of collection")
+	ErrPrimaryKeyIsNotString   = errors.New("primary key of document is not string")
+)
+
 type CollectionConfig struct {
 	PrimaryKey string
 }
@@ -9,21 +16,22 @@ type Collection struct {
 	Data map[string]*Document
 }
 
-func (s *Collection) Put(doc Document) {
+func (s *Collection) Put(doc Document) error {
 	keyField, ok := doc.Fields[s.PrimaryKey]
 
 	if !ok {
-		return
+		return ErrPrimaryKeysDoesNotMatch
 	}
 
 	if keyField.Type != DocumentFieldTypeString {
-		return
+		return ErrPrimaryKeyIsNotString
 	}
 
 	if newDocKey, isString := keyField.Value.(string); isString {
 		s.Data[newDocKey] = &doc
 	}
 
+	return nil
 }
 
 func (s *Collection) Get(key string) (*Document, bool) {

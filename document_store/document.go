@@ -138,8 +138,22 @@ func UnmarshalDocument(doc *Document, output any) error {
 			return fmt.Errorf(ErrTypicalErrorBuilderUnmarshaling.Error(), ErrUnsupportedDocumentField)
 		}
 
-		if outputValue.Elem().CanSet() && field.Type.Kind() == reflect.TypeOf(docField.Value).Kind() {
-			outputValue.Elem().Set(reflect.ValueOf(docField.Value))
+		if outputValue.CanSet() && field.Type.Kind() == reflect.TypeOf(docField.Value).Kind() {
+			switch reflect.TypeOf(docField.Value).Kind() {
+			case reflect.String:
+				outputValue.Field(i).SetString(reflect.ValueOf(docField.Value).String())
+
+			case reflect.Int8, reflect.Int16, reflect.Int, reflect.Int32, reflect.Int64:
+				outputValue.Field(i).SetInt(reflect.ValueOf(docField.Value).Int())
+
+			case reflect.Bool:
+				outputValue.Field(i).SetBool(reflect.ValueOf(docField.Value).Bool())
+			case reflect.Array, reflect.Slice:
+				outputValue.Field(i).Set(reflect.ValueOf(docField.Value))
+
+			case reflect.Struct:
+				outputValue.Field(i).Set(reflect.ValueOf(docField.Value))
+			}
 		} else {
 			return fmt.Errorf(ErrTypicalErrorBuilderUnmarshaling.Error(), ErrTypesOfDocAndOutputNotMatch)
 		}

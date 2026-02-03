@@ -1,7 +1,8 @@
 package main
 
 import (
-	"errors"
+	"fmt"
+	"lesson5/document_store"
 )
 
 type Str struct {
@@ -16,11 +17,37 @@ type MyStract struct {
 	Structa    Str
 }
 
-var ErrNilInput = errors.New("nil input")
-var ErrNonStructType = errors.New("non struct type input")
+func main() {
+	doc := &document_store.Document{
+		Fields: map[string]document_store.DocumentField{
+			"Primary": {
+				Type:  document_store.DocumentFieldTypeString,
+				Value: "DOCINDEX",
+			},
+			"Info": {
+				Type:  document_store.DocumentFieldTypeString,
+				Value: "Info",
+			},
+			"IsAssigned": {
+				Type:  document_store.DocumentFieldTypeBool,
+				Value: true,
+			},
+			"Summaries": {
+				Type:  document_store.DocumentFieldTypeArray,
+				Value: []int{2, 6, 7, 10},
+			},
+			"Structa": {
+				Type: document_store.DocumentFieldTypeObject,
+				Value: Str{
+					I: 1,
+				},
+			},
+		},
+	}
 
-var ErrUnsupportedDocumentField = errors.New("unsupported document field")
+	s := &MyStract{}
 
-var TypicalErrorBuilderMarshaling = errors.New("error in marshaling Document: %v")
+	document_store.UnmarshalDocument(doc, s)
 
-func main() {}
+	fmt.Println(s.Structa)
+}
