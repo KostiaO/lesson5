@@ -12,6 +12,7 @@ var (
 	ErrUserAlreadyExists            = errors.New("user already exists by this id: %v")
 	ErrNewCollectionInStoreCreating = errors.New("error in creating new collection")
 	ErrGetListOfUsers               = errors.New("error in getting list of users: %v")
+	ErrInGetingUser                 = errors.New("error in getting user: %v")
 )
 
 type User struct {
@@ -88,12 +89,30 @@ func (s *Service) ListUsers() ([]User, error) {
 	return userList, nil
 }
 
-// TODO:
-
 func (s *Service) GetUser(userID string) (*User, error) {
-	return nil, nil
+	userDoc, ok := s.coll.Data[userID]
+
+	if !ok {
+		return nil, fmt.Errorf(ErrInGetingUser.Error(), ErrUserNotFound)
+	}
+
+	user := &User{}
+
+	err := document_store.UnmarshalDocument(userDoc, user)
+
+	if err != nil {
+		return nil, fmt.Errorf(ErrInGetingUser.Error(), err)
+	}
+
+	return user, nil
 }
 
 func (s *Service) DeleteUser(userID string) error {
+	isDeleted := s.coll.Delete(userID)
+
+	if !isDeleted {
+		return fmt.Errorf("error in deleting user: %v", ErrUserNotFound)
+	}
+
 	return nil
 }
